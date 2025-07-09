@@ -1,0 +1,64 @@
+We can solve the Travellign Salesman Problem by using The Held- Karp Algorithm 
+The Held Karp algo uses bitmasking and memoization ie its a dynamic prog approach.
+
+
+# we assume that there is a cost matrix in the form cost[u][v] where u is the last visited city and v is the next unvisited city,
+
+
+Use bitmasking to represent the set of visited cities and dynamic programming to build solutions from smaller subproblems.
+Where the mask of length n, represents the set of visited cities (n==  number of cities)
+the mask ofcourse is in binary  eg 01101 which means that cities 0,2,3 have been visited 
+
+dp[mask][u] = minimum cost to reach city u having visited cities in 'mask'
+where u is the last city visited in the sequence ie mask
+
+The final dp matrix must have its diagonal all zero as the distance from the city to the same is obv 0. (2^n by n)
+
+Starting with dp matrix of size (2^n by n) filled with inf value throughout. The dp matrix will have the updated total cost paths 
+from evry possible node hence its size is 2^n by n.
+
+fixing city 0 as the starting point, and syaing it is the only city visited (base case)
+dp[1 << 0][0] = 0 (refering to the definition above)
+
+We iterate through all possible masks (city subsets) and try to extend paths.
+For each mask and each u such that mask includes u, we try to go to an unvisited city v.
+If we've already visited mask and ended at u, try going to unvisited v. That gives a new mask. Update its cost accordingly.
+
+After all cities are visited, we make our way back to city 0.
+
+The bitmask now becomes 111..(n-1 times)...0 as the city 0 is not re-visited. 
+We now trace back to city 0. We update the dp matrix usign the cost matrix for the distance of every node to city 0.
+the min_cost value which keeps gettign updated and minimized, will give the final output.
+(the min_cost variable must also start at inf value for this to work)
+
+
+#### PSEUDOCODE ####
+
+Function TSP_HeldKarp(cost_matrix):
+    n ← number of cities
+    dp ← 2D array of size [2^n][n] filled with ∞
+    
+    dp[2^0][0] ← 0
+
+    # Iterate over all subsets of cities (as bitmasks)
+    For mask from 0 to (2^n - 1):
+        For u from 0 to (n - 1):
+            If city u is included in mask:
+                For v from 0 to (n - 1):
+                    If city v is NOT in mask:
+                        new_mask ← mask OR (1 << v)
+                        dp[new_mask][v] ← min(
+                            dp[new_mask][v],
+                            dp[mask][u] + cost_matrix[u][v]
+                        )
+
+    # After visiting all cities, return to start city (0)
+    full_mask ← (1 << n) - 1
+    min_cost ← ∞
+
+    For u from 1 to (n - 1):
+        min_cost ← min(min_cost, dp[full_mask][u] + cost_matrix[u][0])
+
+    Return min_cost
+
+
